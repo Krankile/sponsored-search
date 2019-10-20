@@ -5,6 +5,7 @@ import sys
 from gsp import GSP
 from util import argmax_index
 from krankilehelper import pos_effect
+
 class Krankilebb:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
@@ -50,9 +51,13 @@ class Krankilebb:
         returns a list of utilities per slot.
         """    
         utilities = []
+        #To increase readability
         slotsinfo = self.slot_info(t, history, reserve)
+        #pos_effect as presented in krankilehelper.py
         pos = pos_effect((history.round(history.last_round())).clicks)
         for i in range(len(slotsinfo)):
+            #u_i based on the PSET definiton (The expression inside argmax).
+            #  This is NOT the first utility definiton presented.  
             u_i = pos[i]*(self.value-(slotsinfo[i][1]))                
             utilities.append(u_i)
 
@@ -74,25 +79,18 @@ class Krankilebb:
         
 
     def bid(self, t, history, reserve):
-        # The Balanced bidding strategy (BB) is the strategy for a player j that, given
-        # bids b_{-j},
-        # - targets the slot s*_j which maximizes his utility, that is,
-        # s*_j = argmax_s {clicks_s (v_j - t_s(j))}.
-        # - chooses his bid b' for the next round so as to
-        # satisfy the following equation:
-        # clicks_{s*_j} (v_j - t_{s*_j}(j)) = clicks_{s*_j-1}(v_j - b')
-        # (p_x is the price/click in slot x)
-        # If s*_j is the top slot, bid the value v_j
-
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
         if min_bid > self.value:
+            #When price is too high
             bid = self.value
         else:
             if slot > 0:
                 pos = pos_effect((history.round(history.last_round())).clicks)
+                #Place bid as described in PSET
                 bid = self.value - (pos[slot]/pos[slot-1])*(self.value-min_bid)
             else:
+                #When slot is first slot
                 bid = self.value
         return bid
 
