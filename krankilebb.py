@@ -48,9 +48,11 @@ class BBAgent:
         the previous round.
 
         returns a list of utilities per slot.
-        """
-        # TODO: Fill this in
-        utilities = []   # Change this
+        """    
+        utilities = []
+        for i in range(self.slot_info):
+            u_i = history.clicks[i]*(self.value-(slotsinfo[i][1]))                
+            utilities.append(u_i)
 
         
         return utilities
