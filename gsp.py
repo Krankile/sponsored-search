@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import random
+from krankilehelper import pos_effect
+
 
 class GSP:
     """
@@ -8,6 +10,8 @@ class GSP:
     """
     @staticmethod
     def compute(slot_clicks, reserve, bids):
+        print slot_clicks
+        print pos_effect(slot_clicks)
         """
         Given info about the setting (clicks for each slot, and reserve price),
         and bids (list of (id, bid) tuples), compute the following:
@@ -23,10 +27,10 @@ class GSP:
             (in order)
          - per_click_payments is the corresponding payments.
         """
-        valid = lambda (a, bid): bid >= reserve
+        def valid((a, bid)): return bid >= reserve
         valid_bids = filter(valid, bids)
 
-        rev_cmp_bids = lambda (a1, b1), (a2, b2): cmp(b2, b1)
+        def rev_cmp_bids((a1, b1), (a2, b2)): return cmp(b2, b1)
         # shuffle first to make sure we don't have any bias for lower or
         # higher ids
         random.shuffle(valid_bids)
@@ -74,4 +78,3 @@ class GSP:
         min_bid = bid_amounts[slot]
         max_bid = bid_amounts[slot-1] if slot > 0 else None
         return (min_bid, max_bid)
-

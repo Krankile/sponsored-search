@@ -4,6 +4,7 @@ import random
 
 from gsp import GSP
 
+
 class VCG:
     """
     Implements the Vickrey-Clarke-Groves mechanism for ad auctions.
@@ -27,11 +28,11 @@ class VCG:
         """
 
         # The allocation is the same as GSP, so we filled that in for you...
-        
-        valid = lambda (a, bid): bid >= reserve
+
+        def valid((a, bid)): return bid >= reserve
         valid_bids = filter(valid, bids)
 
-        rev_cmp_bids = lambda (a1, b1), (a2, b2): cmp(b2, b1)
+        def rev_cmp_bids((a1, b1), (a2, b2)): return cmp(b2, b1)
         # shuffle first to make sure we don't have any bias for lower or
         # higher ids
         random.shuffle(valid_bids)
@@ -41,7 +42,7 @@ class VCG:
         allocated_bids = valid_bids[:num_slots]
         if len(allocated_bids) == 0:
             return ([], [])
-        
+
         (allocation, just_bids) = zip(*allocated_bids)
 
         # TODO: You just have to implement this function
@@ -54,13 +55,22 @@ class VCG:
 
             # TODO: Compute the payment and return it.
 
+            # Using the recursive form of VCG payment rule
+
+            # If the bid is the lowest bid, compute payment as the max of the reserve and the highest non-valid bid, multiplied by the position effect i.e. slot_clicks
+            if k == n - 1:
+                highest_invalid = sorted(bids, rev_comp_bids)[n]
+                return max(reserve, highest_invalid)
+
+            # If the bid is not the lowest, compute payment according to eq. 10.21
+
         def norm(totals):
             """Normalize total payments by the clicks in each slot"""
-            return map(lambda (x,y): x/y, zip(totals, slot_clicks))
+            return map(lambda (x, y): x/y, zip(totals, slot_clicks))
 
         per_click_payments = norm(
             [total_payment(k) for k in range(len(allocation))])
-        
+
         return (list(allocation), per_click_payments)
 
     @staticmethod
