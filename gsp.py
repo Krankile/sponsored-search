@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import random
-from krankilehelper import pos_effect
 
 
 class GSP:
@@ -10,8 +9,6 @@ class GSP:
     """
     @staticmethod
     def compute(slot_clicks, reserve, bids):
-        print slot_clicks
-        print pos_effect(slot_clicks)
         """
         Given info about the setting (clicks for each slot, and reserve price),
         and bids (list of (id, bid) tuples), compute the following:

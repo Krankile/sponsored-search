@@ -3,6 +3,7 @@
 import random
 
 from gsp import GSP
+from krankilehelper import pos_effect
 
 
 class VCG:
@@ -56,13 +57,14 @@ class VCG:
             # TODO: Compute the payment and return it.
 
             # Using the recursive form of VCG payment rule
-
             # If the bid is the lowest bid, compute payment as the max of the reserve and the highest non-valid bid, multiplied by the position effect i.e. slot_clicks
             if k == n - 1:
-                highest_invalid = sorted(bids, rev_comp_bids)[n]
-                return max(reserve, highest_invalid)
+                highest_invalid = sorted(bids, rev_cmp_bids)[n][0]
+                return slot_clicks[k] * max(reserve, highest_invalid)
 
             # If the bid is not the lowest, compute payment according to eq. 10.21
+            pos = pos_effect(slot_clicks)
+            return (slot_clicks[k]-slot_clicks[k+1]) * just_bids[k+1] + total_payment(k+1)
 
         def norm(totals):
             """Normalize total payments by the clicks in each slot"""
