@@ -4,8 +4,8 @@ import sys
 
 from gsp import GSP
 from util import argmax_index
-
-class BBAgent:
+from krankilehelper import pos_effect
+class Krankilebb:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
@@ -50,8 +50,10 @@ class BBAgent:
         returns a list of utilities per slot.
         """    
         utilities = []
-        for i in range(self.slot_info):
-            u_i = history.clicks[i]*(self.value-(slotsinfo[i][1]))                
+        slotsinfo = self.slot_info(t, history, reserve)
+        pos = pos_effect((history.round(history.last_round())).clicks)
+        for i in range(len(slotsinfo)):
+            u_i = pos[i]*(self.value-(slotsinfo[i][1]))                
             utilities.append(u_i)
 
         
@@ -69,6 +71,8 @@ class BBAgent:
         info = self.slot_info(t, history, reserve)
         return info[i]
 
+        
+
     def bid(self, t, history, reserve):
         # The Balanced bidding strategy (BB) is the strategy for a player j that, given
         # bids b_{-j},
@@ -82,10 +86,14 @@ class BBAgent:
 
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
-
-        # TODO: Fill this in.
-        bid = 0  # change this
-        
+        if min_bid > self.value:
+            bid = self.value
+        else:
+            if slot > 0:
+                pos = pos_effect((history.round(history.last_round())).clicks)
+                bid = self.value - (pos[slot]/pos[slot-1])*(self.value-min_bid)
+            else:
+                bid = self.value
         return bid
 
     def __repr__(self):
