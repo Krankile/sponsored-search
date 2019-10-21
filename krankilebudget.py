@@ -78,8 +78,9 @@ class Krankilebudget:
         return info[i]
 
     def bid(self, t, history, reserve):
-        prev_round = history.round(t-1)
-        if t < (self.id - 9) * 2:
+
+        # Only bid when everyone else is guaranteed to be empty (hopefully..)
+        if t < 46:
             return 0
 
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
