@@ -4,6 +4,7 @@ import sys
 
 from gsp import GSP
 from util import argmax_index
+from krankilehelper import pos_effect
 
 
 class Krankilebudget:
@@ -15,7 +16,7 @@ class Krankilebudget:
         self.budget = budget
 
     def initial_bid(self, reserve):
-        return self.value / 2
+        return 0
 
     def slot_info(self, t, history, reserve):
         """Compute the following for each slot, assuming that everyone else
@@ -42,8 +43,7 @@ class Krankilebudget:
 #        sys.stdout.write("slot info: %s\n" % info)
         return info
 
-
-def expected_utils(self, t, history, reserve):
+    def expected_utils(self, t, history, reserve):
         """
         Figure out the expected utility of bidding such that we win each
         slot, assuming that everyone else keeps their bids constant from
@@ -57,10 +57,10 @@ def expected_utils(self, t, history, reserve):
         # pos_effect as presented in krankilehelper.py
         pos = pos_effect((history.round(history.last_round())).clicks)
         for i in range(len(slotsinfo)):
-            # u_i based on the PSET definiton (The expression inside argmax).
-            #  This is NOT the first utility definiton presented.
-            u_i = pos[i]*(self.value-((slotsinfo[i][1] + slotsinfo[i][2]) / 2) /
-                          ((slotsinfo[i][1] + slotsinfo[i][2]) / 2)
+                # u_i based on the PSET definiton (The expression inside argmax).
+                #  This is NOT the first utility definiton presented.
+            u_i = pos[i]*(self.value-(slotsinfo[i][1])) / \
+                float(slotsinfo[i][1])
             utilities.append(u_i)
 
         return utilities
@@ -73,27 +73,28 @@ def expected_utils(self, t, history, reserve):
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-        i=argmax_index(self.expected_utils(t, history, reserve))
-        info=self.slot_info(t, history, reserve)
+        i = argmax_index(self.expected_utils(t, history, reserve))
+        info = self.slot_info(t, history, reserve)
         return info[i]
 
     def bid(self, t, history, reserve):
-            prev_round=history.round(t-1)
-            (slot, min_bid, max_bid)=self.target_slot(t, history, reserve)
-            if min_bid > self.value:
-                # When price is too high
-                bid=self.value
-            else:
-                if slot > 0:
-                    pos=pos_effect(
-                        (history.round(history.last_round())).clicks)
-                    # Place bid as described in PSET
-                    bid=self.value - (pos[slot]/pos[slot-1]
-                                      )*(self.value-min_bid)
-                else:
-                    # When slot is first slot
-                    bid=self.value
-            return bid
+        prev_round = history.round(t-1)
+        if t < (self.id - 9) * 2:
+            return 0
+
+        (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
+        if min_bid > self.value:
+            # When price is too high, place bid equal to value and hope for the best
+            return self.value
+
+        if slot > 0:
+            pos = pos_effect(
+                (history.round(history.last_round())).clicks)
+            # Place bid as described in the pset text
+            return self.value - (pos[slot]/pos[slot-1]
+                                 )*(self.value-min_bid)
+
+        return self.value
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
