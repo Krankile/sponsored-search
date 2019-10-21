@@ -79,8 +79,8 @@ class KrankileBudget:
 
     def bid(self, t, history, reserve):
 
-        # Only bid when everyone else is guaranteed to be empty (hopefully..)
-        if t < 24:
+        # Wait a little before starting to bid to hopefully avoid the worst bidding war
+        if t < 12:
             return 0
 
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
