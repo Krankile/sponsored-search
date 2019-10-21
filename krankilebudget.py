@@ -7,7 +7,7 @@ from util import argmax_index
 from krankilehelper import pos_effect
 
 
-class Krankilebudget:
+class KrankileBudget:
     """Balanced bidding agent"""
 
     def __init__(self, id, value, budget):
