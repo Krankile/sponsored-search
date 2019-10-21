@@ -5,8 +5,10 @@ import sys
 from gsp import GSP
 from util import argmax_index
 
+
 class Krankilebudget:
     """Balanced bidding agent"""
+
     def __init__(self, id, value, budget):
         self.id = id
         self.value = value
@@ -14,7 +16,6 @@ class Krankilebudget:
 
     def initial_bid(self, reserve):
         return self.value / 2
-
 
     def slot_info(self, t, history, reserve):
         """Compute the following for each slot, assuming that everyone else
@@ -30,18 +31,19 @@ class Krankilebudget:
         other_bids = filter(lambda (a_id, b): a_id != self.id, prev_round.bids)
 
         clicks = prev_round.clicks
+
         def compute(s):
             (min, max) = GSP.bid_range_for_slot(s, clicks, reserve, other_bids)
             if max == None:
                 max = 2 * min
             return (s, min, max)
-            
+
         info = map(compute, range(len(clicks)))
 #        sys.stdout.write("slot info: %s\n" % info)
         return info
 
 
-    def expected_utils(self, t, history, reserve):
+def expected_utils(self, t, history, reserve):
         """
         Figure out the expected utility of bidding such that we win each
         slot, assuming that everyone else keeps their bids constant from
@@ -49,10 +51,18 @@ class Krankilebudget:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
+        utilities = []
+        # To increase readability
+        slotsinfo = self.slot_info(t, history, reserve)
+        # pos_effect as presented in krankilehelper.py
+        pos = pos_effect((history.round(history.last_round())).clicks)
+        for i in range(len(slotsinfo)):
+            # u_i based on the PSET definiton (The expression inside argmax).
+            #  This is NOT the first utility definiton presented.
+            u_i = pos[i]*(self.value-((slotsinfo[i][1] + slotsinfo[i][2]) / 2) /
+                          ((slotsinfo[i][1] + slotsinfo[i][2]) / 2)
+            utilities.append(u_i)
 
-        
         return utilities
 
     def target_slot(self, t, history, reserve):
@@ -63,31 +73,28 @@ class Krankilebudget:
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-        i =  argmax_index(self.expected_utils(t, history, reserve))
-        info = self.slot_info(t, history, reserve)
+        i=argmax_index(self.expected_utils(t, history, reserve))
+        info=self.slot_info(t, history, reserve)
         return info[i]
 
     def bid(self, t, history, reserve):
-        # The Balanced bidding strategy (BB) is the strategy for a player j that, given
-        # bids b_{-j},
-        # - targets the slot s*_j which maximizes his utility, that is,
-        # s*_j = argmax_s {clicks_s (v_j - t_s(j))}.
-        # - chooses his bid b' for the next round so as to
-        # satisfy the following equation:
-        # clicks_{s*_j} (v_j - t_{s*_j}(j)) = clicks_{s*_j-1}(v_j - b')
-        # (p_x is the price/click in slot x)
-        # If s*_j is the top slot, bid the value v_j
-
-        prev_round = history.round(t-1)
-        (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
-
-        # TODO: Fill this in.
-        bid = 0  # change this
-        
-        return bid
+            prev_round=history.round(t-1)
+            (slot, min_bid, max_bid)=self.target_slot(t, history, reserve)
+            if min_bid > self.value:
+                # When price is too high
+                bid=self.value
+            else:
+                if slot > 0:
+                    pos=pos_effect(
+                        (history.round(history.last_round())).clicks)
+                    # Place bid as described in PSET
+                    bid=self.value - (pos[slot]/pos[slot-1]
+                                      )*(self.value-min_bid)
+                else:
+                    # When slot is first slot
+                    bid=self.value
+            return bid
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
             self.__class__.__name__, self.id, self.value)
-
-
